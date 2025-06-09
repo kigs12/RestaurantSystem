@@ -1,0 +1,902 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mamak Corner - Order System</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background-color: #f5f5f5;
+            color: #333;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #ff6b6b 0%, #ff8e53 100%);
+            color: white;
+            padding: 20px;
+            text-align: center;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .tab-container {
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+            overflow: hidden;
+        }
+
+        .tabs {
+            display: flex;
+            background: #f8f8f8;
+            border-bottom: 2px solid #eee;
+        }
+
+        .tab {
+            flex: 1;
+            padding: 15px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 600;
+        }
+
+        .tab.active {
+            background: white;
+            color: #ff6b6b;
+            border-bottom: 3px solid #ff6b6b;
+        }
+
+        .tab:hover {
+            background: #f0f0f0;
+        }
+
+        .menu-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+            padding: 20px;
+        }
+
+        .menu-item {
+            background: white;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .menu-item:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 20px rgba(0,0,0,0.15);
+        }
+
+        .menu-item img {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+        }
+
+        .menu-item-content {
+            padding: 15px;
+        }
+
+        .menu-item h3 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 1.3em;
+        }
+
+        .menu-item-description {
+            color: #666;
+            font-size: 0.9em;
+            margin-bottom: 15px;
+            line-height: 1.4;
+        }
+
+        .menu-item-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .price {
+            font-size: 1.4em;
+            color: #ff6b6b;
+            font-weight: bold;
+        }
+
+        .add-to-cart {
+            background: #ff6b6b;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .add-to-cart:hover {
+            background: #ff5252;
+            transform: scale(1.05);
+        }
+
+        .cart-button {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            background: #ff6b6b;
+            color: white;
+            padding: 15px 25px;
+            border-radius: 50px;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            z-index: 100;
+        }
+
+        .cart-button:hover {
+            transform: scale(1.05);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.3);
+        }
+
+        .cart-count {
+            background: white;
+            color: #ff6b6b;
+            border-radius: 50%;
+            width: 25px;
+            height: 25px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.9em;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 200;
+            overflow-y: auto;
+        }
+
+        .modal-content {
+            background: white;
+            max-width: 600px;
+            margin: 50px auto;
+            border-radius: 10px;
+            box-shadow: 0 5px 30px rgba(0,0,0,0.3);
+            animation: slideIn 0.3s ease;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateY(-50px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        .modal-header {
+            background: #ff6b6b;
+            color: white;
+            padding: 20px;
+            border-radius: 10px 10px 0 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-header h2 {
+            font-size: 1.5em;
+        }
+
+        .close-modal {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 2em;
+            cursor: pointer;
+            transition: transform 0.3s ease;
+        }
+
+        .close-modal:hover {
+            transform: rotate(90deg);
+        }
+
+        .cart-items {
+            padding: 20px;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .cart-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px;
+            border-bottom: 1px solid #eee;
+            transition: background 0.3s ease;
+        }
+
+        .cart-item:hover {
+            background: #f9f9f9;
+        }
+
+        .cart-item-info {
+            flex: 1;
+        }
+
+        .cart-item-name {
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+
+        .cart-item-price {
+            color: #666;
+        }
+
+        .quantity-controls {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .quantity-btn {
+            background: #ff6b6b;
+            color: white;
+            border: none;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 1.2em;
+            transition: all 0.3s ease;
+        }
+
+        .quantity-btn:hover {
+            background: #ff5252;
+            transform: scale(1.1);
+        }
+
+        .quantity {
+            font-weight: 600;
+            min-width: 30px;
+            text-align: center;
+        }
+
+        .remove-item {
+            background: #dc3545;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-left: 10px;
+            transition: all 0.3s ease;
+        }
+
+        .remove-item:hover {
+            background: #c82333;
+        }
+
+        .cart-total {
+            padding: 20px;
+            border-top: 2px solid #eee;
+            background: #f9f9f9;
+        }
+
+        .total-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            font-size: 1.1em;
+        }
+
+        .total-row.grand-total {
+            font-size: 1.4em;
+            font-weight: bold;
+            color: #ff6b6b;
+            margin-top: 10px;
+            padding-top: 10px;
+            border-top: 2px solid #eee;
+        }
+
+        .checkout-btn {
+            width: 100%;
+            background: #28a745;
+            color: white;
+            border: none;
+            padding: 15px;
+            border-radius: 5px;
+            font-size: 1.2em;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 20px;
+            transition: all 0.3s ease;
+        }
+
+        .checkout-btn:hover {
+            background: #218838;
+            transform: scale(1.02);
+        }
+
+        .empty-cart {
+            text-align: center;
+            padding: 50px;
+            color: #666;
+        }
+
+        .empty-cart img {
+            width: 100px;
+            opacity: 0.5;
+            margin-bottom: 20px;
+        }
+
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: #28a745;
+            color: white;
+            padding: 15px 25px;
+            border-radius: 5px;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.2);
+            display: none;
+            animation: slideInRight 0.3s ease;
+            z-index: 300;
+        }
+
+        @keyframes slideInRight {
+            from {
+                transform: translateX(100%);
+            }
+            to {
+                transform: translateX(0);
+            }
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🍛Rao Restaurant</h1>
+        <p>Authentic Malaysian Indian Cuisine</p>
+    </div>
+
+    <div class="container">
+        <div class="tab-container">
+            <div class="tabs">
+                <div class="tab active" onclick="showTab('breads')">🫓 Breads & Rotis</div>
+                <div class="tab" onclick="showTab('rice')">🍚 Rice & Noodles</div>
+                <div class="tab" onclick="showTab('drinks')">🥤 Beverages</div>
+                <div class="tab" onclick="showTab('desserts')">🍮 Desserts</div>
+            </div>
+
+            <!-- Breads & Rotis -->
+            <div id="breads" class="tab-content active">
+                <div class="menu-grid">
+                    <div class="menu-item">
+                        <img src="https://images.unsplash.com/photo-1600626333540-4d20bc4b0bc9?w=400" alt="Roti Canai">
+                        <div class="menu-item-content">
+                            <h3>Roti Canai</h3>
+                            <p class="menu-item-description">Flaky flatbread served with dhal curry and sambal</p>
+                            <div class="menu-item-footer">
+                                <span class="price">RM 2.50</span>
+                                <button class="add-to-cart" onclick="addToCart('Roti Canai', 2.50)">Add to Cart</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="menu-item">
+                        <img src="https://images.unsplash.com/photo-1604908176997-125f25cc6f3d?w=400" alt="Roti Telur">
+                        <div class="menu-item-content">
+                            <h3>Roti Telur</h3>
+                            <p class="menu-item-description">Roti canai with egg filling, crispy outside, fluffy inside</p>
+                            <div class="menu-item-footer">
+                                <span class="price">RM 3.50</span>
+                                <button class="add-to-cart" onclick="addToCart('Roti Telur', 3.50)">Add to Cart</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="menu-item">
+                        <img src="https://images.unsplash.com/photo-1567620905732-2d1ec7ab7445?w=400" alt="Chapati">
+                        <div class="menu-item-content">
+                            <h3>Chapati</h3>
+                            <p class="menu-item-description">Whole wheat flatbread served with curry</p>
+                            <div class="menu-item-footer">
+                                <span class="price">RM 2.00</span>
+                                <button class="add-to-cart" onclick="addToCart('Chapati', 2.00)">Add to Cart</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="menu-item">
+                        <img src="https://images.unsplash.com/photo-1630383249896-424e482df921?w=400" alt="Dosai">
+                        <div class="menu-item-content">
+                            <h3>Dosai</h3>
+                            <p class="menu-item-description">Crispy South Indian crepe made from fermented rice and lentil batter</p>
+                            <div class="menu-item-footer">
+                                <span class="price">RM 4.00</span>
+                                <button class="add-to-cart" onclick="addToCart('Dosai', 4.00)">Add to Cart</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="menu-item">
+                        <img src="https://images.unsplash.com/photo-1626082927389-6cd097cdc6ec?w=400" alt="Roti Tissue">
+                        <div class="menu-item-content">
+                            <h3>Roti Tissue</h3>
+                            <p class="menu-item-description">Paper-thin crispy roti shaped like a cone, drizzled with condensed milk</p>
+                            <div class="menu-item-footer">
+                                <span class="price">RM 5.00</span>
+                                <button class="add-to-cart" onclick="addToCart('Roti Tissue', 5.00)">Add to Cart</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="menu-item">
+                        <img src="https://images.unsplash.com/photo-1555939594-58d7cb561ad1?w=400" alt="Roti Bom">
+                        <div class="menu-item-content">
+                            <h3>Roti Bom</h3>
+                            <p class="menu-item-description">Spiral-shaped roti with sugar and condensed milk</p>
+                            <div class="menu-item-footer">
+                                <span class="price">RM 4.50</span>
+                                <button class="add-to-cart" onclick="addToCart('Roti Bom', 4.50)">Add to Cart</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Rice & Noodles -->
+            <div id="rice" class="tab-content">
+                <div class="menu-grid">
+                    <div class="menu-item">
+                        <img src="https://images.unsplash.com/photo-1563379091339-03b21ab4a4f8?w=400" alt="Nasi Lemak">
+                        <div class="menu-item-content">
+                            <h3>Nasi Lemak</h3>
+                            <p class="menu-item-description">Coconut rice with sambal, fried egg, anchovies, and peanuts</p>
+                            <div class="menu-item-footer">
+                                <span class="price">RM 8.00</span>
+                                <button class="add-to-cart" onclick="addToCart('Nasi Lemak', 8.00)">Add to Cart</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="menu-item">
+                        <img src="https://images.unsplash.com/photo-1585032226651-759b368d7246?w=400" alt="Nasi Goreng">
+                        <div class="menu-item-content">
+                            <h3>Nasi Goreng Mamak</h3>
+                            <p class="menu-item-description">Spicy fried rice with vegetables and fried egg</p>
+                            <div class="menu-item-footer">
+                                <span class="price">RM 7.50</span>
+                                <button class="add-to-cart" onclick="addToCart('Nasi Goreng Mamak', 7.50)">Add to Cart</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="menu-item">
+                        <img src="https://images.unsplash.com/photo-1582878826629-29b7ad1cdc43?w=400" alt="Maggi Goreng">
+                        <div class="menu-item-content">
+                            <h3>Maggi Goreng</h3>
+                            <p class="menu-item-description">Stir-fried instant noodles with vegetables and egg</p>
+                            <div class="menu-item-footer">
+                                <span class="price">RM 6.50</span>
+                                <button class="add-to-cart" onclick="addToCart('Maggi Goreng', 6.50)">Add to Cart</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="menu-item">
+                        <img src="https://images.unsplash.com/photo-1552611052-33e04de081de?w=400" alt="Mee Goreng">
+                        <div class="menu-item-content">
+                            <h3>Mee Goreng</h3>
+                            <p class="menu-item-description">Spicy fried yellow noodles with prawns and vegetables</p>
+                            <div class="menu-item-footer">
+                                <span class="price">RM 7.00</span>
+                                <button class="add-to-cart" onclick="addToCart('Mee Goreng', 7.00)">Add to Cart</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="menu-item">
+                        <img src="https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?w=400" alt="Nasi Kandar">
+                        <div class="menu-item-content">
+                            <h3>Nasi Kandar</h3>
+                            <p class="menu-item-description">Steamed rice with various curries and side dishes</p>
+                            <div class="menu-item-footer">
+                                <span class="price">RM 9.00</span>
+                                <button class="add-to-cart" onclick="addToCart('Nasi Kandar', 9.00)">Add to Cart</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="menu-item">
+                        <img src="https://images.unsplash.com/photo-1516714435131-44d6b64dc6a2?w=400" alt="Murtabak">
+                        <div class="menu-item-content">
+                            <h3>Murtabak</h3>
+                            <p class="menu-item-description">Stuffed pan-fried bread with minced meat, egg, and onions</p>
+                            <div class="menu-item-footer">
+                                <span class="price">RM 10.00</span>
+                                <button class="add-to-cart" onclick="addToCart('Murtabak', 10.00)">Add to Cart</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Beverages -->
+            <div id="drinks" class="tab-content">
+                <div class="menu-grid">
+                    <div class="menu-item">
+                        <img src="https://images.unsplash.com/photo-1571950006418-f226dc106482?w=400" alt="Teh Tarik">
+                        <div class="menu-item-content">
+                            <h3>Teh Tarik</h3>
+                            <p class="menu-item-description">Pulled milk tea, frothy and sweet</p>
+                            <div class="menu-item-footer">
+                                <span class="price">RM 2.80</span>
+                                <button class="add-to-cart" onclick="addToCart('Teh Tarik', 2.80)">Add to Cart</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="menu-item">
+                        <img src="https://images.unsplash.com/photo-1558857563-b371033873b8?w=400" alt="Teh Ais">
+                        <div class="menu-item-content">
+                            <h3>Teh Ais</h3>
+                            <p class="menu-item-description">Iced milk tea</p>
+                            <div class="menu-item-footer">
+                                <span class="price">RM 3.00</span>
+                                <button class="add-to-cart" onclick="addToCart('Teh Ais', 3.00)">Add to Cart</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="menu-item">
+                        <img src="https://images.unsplash.com/photo-1559496417-e7f25cb247f3?w=400" alt="Milo Ais">
+                        <div class="menu-item-content">
+                            <h3>Milo Ais</h3>
+                            <p class="menu-item-description">Iced chocolate malt drink</p>
+                            <div class="menu-item-footer">
+                                <span class="price">RM 3.50</span>
+                                <button class="add-to-cart" onclick="addToCart('Milo Ais', 3.50)">Add to Cart</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="menu-item">
+                        <img src="https://images.unsplash.com/photo-1544252890-7c5a27c9e7b1?w=400" alt="Sirap Bandung">
+                        <div class="menu-item-content">
+                            <h3>Sirap Bandung</h3>
+                            <p class="menu-item-description">Rose syrup with milk</p>
+                            <div class="menu-item-footer">
+                                <span class="price">RM 2.50</span>
+                                <button class="add-to-cart" onclick="addToCart('Sirap Bandung', 2.50)">Add to Cart</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="menu-item">
+                        <img src="https://images.unsplash.com/photo-1570831739435-6601aa3fa4fb?w=400" alt="Limau Ais">
+                        <div class="menu-item-content">
+                            <h3>Limau Ais</h3>
+                            <p class="menu-item-description">Fresh lime juice with ice</p>
+                            <div class="menu-item-footer">
+                                <span class="price">RM 3.00</span>
+                                <button class="add-to-cart" onclick="addToCart('Limau Ais', 3.00)">Add to Cart</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="menu-item">
+                        <img src="https://images.unsplash.com/photo-1523371054106-bbf80586c38c?w=400" alt="Nescafe Ais">
+                        <div class="menu-item-content">
+                            <h3>Nescafe Ais</h3>
+                            <p class="menu-item-description">Iced coffee with condensed milk</p>
+                            <div class="menu-item-footer">
+                                <span class="price">RM 3.20</span>
+                                <button class="add-to-cart" onclick="addToCart('Nescafe Ais', 3.20)">Add to Cart</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Desserts -->
+            <div id="desserts" class="tab-content">
+                <div class="menu-grid">
+                    <div class="menu-item">
+                        <img src="https://images.unsplash.com/photo-1609501676725-7186f017a4b7?w=400" alt="Cendol">
+                        <div class="menu-item-content">
+                            <h3>Cendol</h3>
+                            <p class="menu-item-description">Shaved ice with green jelly, coconut milk, and palm sugar</p>
+                            <div class="menu-item-footer">
+                                <span class="price">RM 4.50</span>
+                                <button class="add-to-cart" onclick="addToCart('Cendol', 4.50)">Add to Cart</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="menu-item">
+                        <img src="https://images.unsplash.com/photo-1609525312344-f3f3f4fd7e2b?w=400" alt="Ais Kacang">
+                        <div class="menu-item-content">
+                            <h3>Ais Kacang</h3>
+                            <p class="menu-item-description">Shaved ice with red beans, corn, and syrup</p>
+                            <div class="menu-item-footer">
+                                <span class="price">RM 4.00</span>
+                                <button class="add-to-cart" onclick="addToCart('Ais Kacang', 4.00)">Add to Cart</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="menu-item">
+                        <img src="https://images.unsplash.com/photo-1548865132-107f02def224?w=400" alt="Pisang Goreng">
+                        <div class="menu-item-content">
+                            <h3>Pisang Goreng</h3>
+                            <p class="menu-item-description">Deep fried banana fritters</p>
+                            <div class="menu-item-footer">
+                                <span class="price">RM 3.50</span>
+                                <button class="add-to-cart" onclick="addToCart('Pisang Goreng', 3.50)">Add to Cart</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="menu-item">
+                        <img src="https://images.unsplash.com/photo-1609526260307-802d03c8d1c1?w=400" alt="Apam Balik">
+                        <div class="menu-item-content">
+                            <h3>Apam Balik</h3>
+                            <p class="menu-item-description">Crispy pancake with peanuts, sugar, and corn</p>
+                            <div class="menu-item-footer">
+                                <span class="price">RM 3.00</span>
+                                <button class="add-to-cart" onclick="addToCart('Apam Balik', 3.00)">Add to Cart</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Cart Button -->
+    <div class="cart-button" onclick="showCart()">
+        🛒 Cart
+        <span class="cart-count" id="cartCount">0</span>
+    </div>
+
+    <!-- Cart Modal -->
+    <div id="cartModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>🛒 Your Order</h2>
+                <button class="close-modal" onclick="closeCart()">&times;</button>
+            </div>
+            <div id="cartContent">
+                <div class="empty-cart">
+                    <p>Your cart is empty</p>
+                    <p>Add some delicious food to get started!</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Notification -->
+    <div id="notification" class="notification"></div>
+
+    <script>
+        let cart = [];
+        let cartTotal = 0;
+
+        function showTab(tabName) {
+            // Hide all tab contents
+            const tabContents = document.querySelectorAll('.tab-content');
+            tabContents.forEach(content => {
+                content.classList.remove('active');
+            });
+
+            // Remove active class from all tabs
+            const tabs = document.querySelectorAll('.tab');
+            tabs.forEach(tab => {
+                tab.classList.remove('active');
+            });
+
+            // Show selected tab content
+            document.getElementById(tabName).classList.add('active');
+
+            // Add active class to clicked tab
+            event.target.classList.add('active');
+        }
+
+        function addToCart(itemName, price) {
+            const existingItem = cart.find(item => item.name === itemName);
+            
+            if (existingItem) {
+                existingItem.quantity++;
+            } else {
+                cart.push({
+                    name: itemName,
+                    price: price,
+                    quantity: 1
+                });
+            }
+            
+            updateCartCount();
+            showNotification(`${itemName} added to cart!`);
+        }
+
+        function updateCartCount() {
+            const count = cart.reduce((total, item) => total + item.quantity, 0);
+            document.getElementById('cartCount').textContent = count;
+        }
+
+        function showNotification(message) {
+            const notification = document.getElementById('notification');
+            notification.textContent = message;
+            notification.style.display = 'block';
+            
+            setTimeout(() => {
+                notification.style.display = 'none';
+            }, 2000);
+        }
+
+        function showCart() {
+            const modal = document.getElementById('cartModal');
+            modal.style.display = 'block';
+            renderCart();
+        }
+
+        function closeCart() {
+            const modal = document.getElementById('cartModal');
+            modal.style.display = 'none';
+        }
+
+        function renderCart() {
+            const cartContent = document.getElementById('cartContent');
+            
+            if (cart.length === 0) {
+                cartContent.innerHTML = `
+                    <div class="empty-cart">
+                        <p>Your cart is empty</p>
+                        <p>Add some delicious food to get started!</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            let cartHTML = '<div class="cart-items">';
+            let subtotal = 0;
+            
+            cart.forEach((item, index) => {
+                const itemTotal = item.price * item.quantity;
+                subtotal += itemTotal;
+                
+                cartHTML += `
+                    <div class="cart-item">
+                        <div class="cart-item-info">
+                            <div class="cart-item-name">${item.name}</div>
+                            <div class="cart-item-price">RM ${item.price.toFixed(2)} each</div>
+                        </div>
+                        <div class="quantity-controls">
+                            <button class="quantity-btn" onclick="decreaseQuantity(${index})">-</button>
+                            <span class="quantity">${item.quantity}</span>
+                            <button class="quantity-btn" onclick="increaseQuantity(${index})">+</button>
+                            <button class="remove-item" onclick="removeItem(${index})">Remove</button>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            cartHTML += '</div>';
+            
+            const tax = subtotal * 0.06; // 6% tax
+            const total = subtotal + tax;
+            
+            cartHTML += `
+                <div class="cart-total">
+                    <div class="total-row">
+                        <span>Subtotal:</span>
+                        <span>RM ${subtotal.toFixed(2)}</span>
+                    </div>
+                    <div class="total-row">
+                        <span>Tax (6%):</span>
+                        <span>RM ${tax.toFixed(2)}</span>
+                    </div>
+                    <div class="total-row grand-total">
+                        <span>Total:</span>
+                        <span>RM ${total.toFixed(2)}</span>
+                    </div>
+                    <button class="checkout-btn" onclick="checkout()">Proceed to Checkout</button>
+                </div>
+            `;
+            
+            cartContent.innerHTML = cartHTML;
+        }
+
+        function increaseQuantity(index) {
+            cart[index].quantity++;
+            updateCartCount();
+            renderCart();
+        }
+
+        function decreaseQuantity(index) {
+            if (cart[index].quantity > 1) {
+                cart[index].quantity--;
+            } else {
+                removeItem(index);
+            }
+            updateCartCount();
+            renderCart();
+        }
+
+        function removeItem(index) {
+            const itemName = cart[index].name;
+            cart.splice(index, 1);
+            updateCartCount();
+            renderCart();
+            showNotification(`${itemName} removed from cart`);
+        }
+
+        function checkout() {
+            if (cart.length === 0) return;
+            
+            const subtotal = cart.reduce((total, item) => total + (item.price * item.quantity), 0);
+            const tax = subtotal * 0.06;
+            const total = subtotal + tax;
+            
+            alert(`Order Confirmed!\n\nYour order total is RM ${total.toFixed(2)}\nThank you for ordering from Rao Restaurant!`);
+            
+            // Clear cart
+            cart = [];
+            updateCartCount();
+            closeCart();
+            showNotification('Order placed successfully!');
+        }
+
+        // Close modal when clicking outside
+        window.onclick = function(event) {
+            const modal = document.getElementById('cartModal');
+            if (event.target === modal) {
+                closeCart();
+            }
+        }
+    </script>
+</body>
+</html>
